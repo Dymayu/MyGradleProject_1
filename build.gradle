@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.example.App'
+    }
+}
+// 1 delete
+tasks.register('deleteFile', Delete) {
+    delete 'build'
+
+    doLast {
+        System.out.println("Delete package build")
+    }
+}
+// 2 create fatjar
+tasks.register('createFile', Jar) {
+    archiveFileName = 'Yurii.jar'
+    manifest {
+
+        attributes('Main-Class': 'org.example.App')
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+
+    doLast {
+        System.out.println("Jar is complited!")
+    }
+}
+// 3 step run app
+tasks.register('runFile', Exec) {
+    group = "Execution"
+    description = "Run the output executable jar with ExecTask"
+    commandLine "java", "-jar", "build/libs/Yurii.jar"
+}
+
+//runWithExecJarExecutable.dependsOn(customFatJar)
+
+test {
+    useJUnitPlatform()
+}
